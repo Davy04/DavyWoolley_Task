@@ -18,7 +18,9 @@ MonoBehaviour:
   type: 0
   stackable: 0
   maxStack: 1
+  weaponScale: {x: 1, y: 1, z: 1}
   damage: 10
   attackSpeed: 1
+  rotation: -57
   healthRestore: 0
   manaRestore: 0
