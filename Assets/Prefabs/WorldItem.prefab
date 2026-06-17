@@ -112,8 +112,12 @@ MonoBehaviour:
   pickupDelay: 0.5
   bobAmplitude: 0.08
   bobFrequency: 2
-  preplacedItem: {fileID: 11400000, guid: b3dd32cc14efc0c47916924ea6040518, type: 2}
-  preplacedCount: 1
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 128
+  obstacleCheckRadius: 0.12
+  preplacedItem: {fileID: 0}
+  preplacedCount: 0
 --- !u!50 &2771161344741179577
 Rigidbody2D:
   serializedVersion: 5
