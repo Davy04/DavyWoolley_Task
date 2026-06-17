@@ -37,10 +37,23 @@ public class InventoryItem : MonoBehaviour,
         RefreshUI();
     }
 
-    public void AddCount(int amount)
+    /// <summary>True while this stack can still hold more of its item.</summary>
+    public bool HasSpace => item != null && count < item.maxStack;
+
+    /// <summary>
+    /// Adds up to <paramref name="amount"/> without exceeding maxStack.
+    /// Returns how many were actually added, so the caller can place the leftover elsewhere.
+    /// </summary>
+    public int AddAmount(int amount)
     {
-        count = Mathf.Min(count + amount, item != null ? item.maxStack : int.MaxValue);
+        if (item == null || amount <= 0)
+            return 0;
+
+        int freeSpace = item.maxStack - count;
+        int added = Mathf.Clamp(amount, 0, freeSpace);
+        count += added;
         RefreshUI();
+        return added;
     }
 
     private void RefreshUI()
@@ -110,14 +123,20 @@ public class InventoryItem : MonoBehaviour,
         bool consumed = item.Use(gameObject);
 
         if (consumed)
+            ConsumeOne();
+        else
+            RefreshUI();
+    }
+
+    public void ConsumeOne()
+    {
+        count--;
+        if (count <= 0)
         {
-            count--;
-            if (count <= 0)
-            {
-                Destroy(gameObject);
-                InventoryManager.Instance?.SaveInventory();
-                return;
-            }
+            transform.SetParent(null);
+            Destroy(gameObject);
+            InventoryManager.Instance?.NotifySlotChanged();
+            return;
         }
 
         RefreshUI();

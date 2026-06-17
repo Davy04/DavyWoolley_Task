@@ -154,35 +154,57 @@ public class InventoryManager : MonoBehaviour
         return slots[_selectedSlotIndex];
     }
 
-    public InventoryItem AddItem(Item item, int count = 1)
+    /// <summary>
+    /// Adds items to the inventory, filling existing stacks before using empty slots.
+    /// Returns how many were actually added (less than <paramref name="count"/> if the inventory filled up).
+    /// </summary>
+    public int AddItem(Item item, int count = 1)
     {
-        if (item == null)
-            return null;
+        if (item == null || count <= 0)
+            return 0;
 
+        int remaining = count;
+        
         if (item.stackable)
         {
-            InventoryItem existingStack = FindExistingStack(item);
-            if (existingStack != null)
+            InventoryItem stack = FindStackWithSpace(item);
+            while (remaining > 0 && stack != null)
             {
-                existingStack.AddCount(count);
-                RefreshWeapon();
-                SaveInventory();
-                return existingStack;
+                remaining -= stack.AddAmount(remaining);
+                stack = FindStackWithSpace(item);
             }
         }
 
-        InventorySlot freeSlot = GetFirstEmptySlot();
-        if (freeSlot == null)
+        // 2. Put whatever is left into empty slots, one stack at a time.
+        while (remaining > 0)
         {
-            Debug.Log("Inventory full.");
-            return null;
+            InventorySlot freeSlot = GetFirstEmptySlot();
+            if (freeSlot == null)
+            {
+                Debug.Log("Inventory full.");
+                break;
+            }
+
+            int amount = item.stackable ? Mathf.Min(remaining, item.maxStack) : 1;
+            CreateItemInSlot(item, amount, freeSlot);
+            remaining -= amount;
         }
 
-        GameObject obj = Instantiate(itemPrefab, freeSlot.transform);
+        int added = count - remaining;
+        if (added > 0)
+        {
+            RefreshWeapon();
+            SaveInventory();
+        }
+
+        return added;
+    }
+
+    private InventoryItem CreateItemInSlot(Item item, int count, InventorySlot slot)
+    {
+        GameObject obj = Instantiate(itemPrefab, slot.transform);
         InventoryItem inventoryItem = obj.GetComponent<InventoryItem>();
         inventoryItem.Initialize(item, count);
-        RefreshWeapon();
-        SaveInventory();
         return inventoryItem;
     }
 
@@ -213,7 +235,7 @@ public class InventoryManager : MonoBehaviour
 
         Vector3 spawnPosition = dropPoint != null ? dropPoint.position : transform.position;
         GameObject obj = Instantiate(worldItemPrefab, spawnPosition, Quaternion.identity);
-        obj.GetComponent<WorldItem>().Initialize(item, count);
+        obj.GetComponent<WorldItem>().Initialize(item, count, magnetImmune: true);
     }
 
     public void SaveInventory()
@@ -293,18 +315,16 @@ public class InventoryManager : MonoBehaviour
         if (slot.transform.childCount > 0)
             return;
 
-        GameObject obj = Instantiate(itemPrefab, slot.transform);
-        InventoryItem inventoryItem = obj.GetComponent<InventoryItem>();
-        inventoryItem.Initialize(item, count);
+        CreateItemInSlot(item, count, slot);
     }
 
-    private InventoryItem FindExistingStack(Item item)
+    private InventoryItem FindStackWithSpace(Item item)
     {
         foreach (InventorySlot slot in slots)
         {
             if (slot == null || slot.transform.childCount == 0) continue;
             InventoryItem existing = slot.transform.GetChild(0).GetComponent<InventoryItem>();
-            if (existing != null && existing.item == item && existing.count < item.maxStack)
+            if (existing != null && existing.item == item && existing.HasSpace)
                 return existing;
         }
 
@@ -312,7 +332,7 @@ public class InventoryManager : MonoBehaviour
         {
             if (slot == null || slot.transform.childCount == 0) continue;
             InventoryItem existing = slot.transform.GetChild(0).GetComponent<InventoryItem>();
-            if (existing != null && existing.item == item && existing.count < item.maxStack)
+            if (existing != null && existing.item == item && existing.HasSpace)
                 return existing;
         }
 
