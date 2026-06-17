@@ -2,8 +2,9 @@ using UnityEngine;
 
 public enum ItemType
 {
-    Weapon,
-    Consumable
+    Wand,
+    Consumable,
+    Coin
 }
 
 [CreateAssetMenu(menuName = "Scriptable Object/Item")]
@@ -17,6 +18,10 @@ public class Item : ScriptableObject
     public bool stackable;
     public int maxStack = 1;
     public Vector3 weaponScale = Vector3.one;
+    public Vector3 worldScale = Vector3.one;
+
+    [Header("Behavior")]
+    public WeaponBehavior weaponBehavior;
 
     [Header("Weapon")]
     public int damage;
@@ -25,18 +30,17 @@ public class Item : ScriptableObject
 
     [Header("Consumable")]
     public int healthRestore;
-    public int manaRestore;
 
     public bool Use(GameObject user)
     {
         switch (type)
         {
-            case ItemType.Weapon:
-                Debug.Log($"Equipping weapon '{itemName}' (damage: {damage}, speed: {attackSpeed}).");
+            case ItemType.Wand:
+                Debug.Log($"Equipping '{itemName}' (damage: {damage}, speed: {attackSpeed}).");
                 return false;
 
             case ItemType.Consumable:
-                Debug.Log($"Consuming '{itemName}' (+{healthRestore} HP, +{manaRestore} MP).");
+                user.GetComponent<Health>()?.Heal(healthRestore);
                 return true;
         }
 

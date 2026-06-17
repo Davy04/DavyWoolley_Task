@@ -10,16 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e40009c06ff417408b16f246d969da7, type: 3}
-  m_Name: Arch
+  m_Name: Wand
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  itemName: Arch
-  description: 
-  icon: {fileID: 21300000, guid: 068bee25b129ec4449f32c81a046bed8, type: 3}
+  itemName: Wand
+  description: Distance Attack
+  icon: {fileID: 21300000, guid: 32289efd645632c488e76fc50543ffe0, type: 3}
   type: 0
   stackable: 0
   maxStack: 1
   weaponScale: {x: 1, y: 1, z: 1}
-  damage: 0
+  worldScale: {x: 1, y: 1, z: 1}
+  weaponBehavior: {fileID: 11400000, guid: f7eb8fc4b9e20b147a3f956d7bcf7137, type: 2}
+  damage: 10
   attackSpeed: 1
+  rotation: -57
   healthRestore: 0
   manaRestore: 0
