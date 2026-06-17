@@ -31,19 +31,6 @@ public class Item : ScriptableObject
     [Header("Consumable")]
     public int healthRestore;
 
-    public bool Use(GameObject user)
-    {
-        switch (type)
-        {
-            case ItemType.Wand:
-                Debug.Log($"Equipping '{itemName}' (damage: {damage}, speed: {attackSpeed}).");
-                return false;
-
-            case ItemType.Consumable:
-                user.GetComponent<Health>()?.Heal(healthRestore);
-                return true;
-        }
-
-        return false;
-    }
+    [Header("Audio")]
+    public AudioClip pickupSound;
 }
