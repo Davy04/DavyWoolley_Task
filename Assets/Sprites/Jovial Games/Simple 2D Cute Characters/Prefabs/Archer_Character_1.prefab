@@ -5691,6 +5691,7 @@ GameObject:
   - component: {fileID: 6962329509116229989}
   - component: {fileID: 4819245783942807734}
   - component: {fileID: 5657256138247846024}
+  - component: {fileID: 5055345979432286831}
   m_Layer: 3
   m_Name: Archer_Character_1
   m_TagString: Player
@@ -5957,6 +5958,18 @@ MonoBehaviour:
   moveThreshold: 0.1
   volume: 1
 --- !u!114 &5657256138247846024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7992456318929058983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d99e819f73057fc40aac071fd427ff11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLocator
+--- !u!114 &5055345979432286831
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
