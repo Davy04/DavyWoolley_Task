@@ -7,6 +7,7 @@ public class EnemyAttack : MonoBehaviour
     public float AttackRange => attackRange;
     [SerializeField] private float attackCooldown = 1.5f;
     [SerializeField] private Animator animator;
+    [SerializeField] private AudioClip attackClip;
 
     private static readonly int AttackTrigger = Animator.StringToHash("Attack");
 
@@ -17,11 +18,9 @@ public class EnemyAttack : MonoBehaviour
 
     private void Start()
     {
-        GameObject playerObj = GameObject.FindWithTag("Player");
-        if (playerObj == null) return;
-        _player = playerObj.transform;
-        _playerHealth = playerObj.GetComponent<Health>();
-        _playerKnockback = playerObj.GetComponent<Knockback>();
+        _player          = PlayerLocator.Player;
+        _playerHealth    = PlayerLocator.PlayerHealth;
+        _playerKnockback = PlayerLocator.PlayerKnockback;
     }
 
     private void Update()
@@ -38,6 +37,7 @@ public class EnemyAttack : MonoBehaviour
     {
         _nextAttackTime = Time.time + attackCooldown;
         animator?.SetTrigger(AttackTrigger);
+        AudioManager.Instance?.PlaySFX(attackClip);
         _playerHealth.TakeDamage(damage);
 
         Vector2 knockbackDir = ((Vector2)_player.position - (Vector2)transform.position).normalized;

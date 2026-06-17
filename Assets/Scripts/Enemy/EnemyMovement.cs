@@ -14,10 +14,7 @@ public class EnemyMovement : MonoBehaviour
 
     private void Start()
     {
-
-        GameObject playerObj = GameObject.FindWithTag("Player");
-        if (playerObj != null)
-            _player = playerObj.transform;
+        _player = PlayerLocator.Player;
 
         EnemyAttack attack = GetComponent<EnemyAttack>();
         _stopRange = attack != null ? attack.AttackRange : 1.2f;

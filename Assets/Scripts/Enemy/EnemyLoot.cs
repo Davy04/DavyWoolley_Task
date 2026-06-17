@@ -5,12 +5,10 @@ using Random = UnityEngine.Random;
 public class EnemyLoot : MonoBehaviour
 {
     [Header("Coin Drop (on hit)")]
-    [SerializeField] private GameObject worldItemPrefab;
-    [SerializeField] private Item coinItem;
     [SerializeField] private int coinsPerHit = 3;
-    [SerializeField] private float coinThrowForce = 4f;
 
     [Header("Death Loot")]
+    [SerializeField] private GameObject worldItemPrefab;
     [SerializeField] private LootDrop[] deathLoot;
 
     private Health _health;
@@ -37,13 +35,10 @@ public class EnemyLoot : MonoBehaviour
 
     private void DropCoins()
     {
-        if (worldItemPrefab == null || coinItem == null || coinsPerHit <= 0) return;
+        if (coinsPerHit <= 0 || CoinPool.Instance == null) return;
 
         for (int i = 0; i < coinsPerHit; i++)
-        {
-            GameObject obj = Instantiate(worldItemPrefab, transform.position, Quaternion.identity);
-            obj.GetComponent<WorldItem>()?.Initialize(coinItem, 1, coinThrowForce);
-        }
+            CoinPool.Instance.SpawnCoin(transform.position);
     }
 
     private void DropDeathLoot()
