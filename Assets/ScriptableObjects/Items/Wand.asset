@@ -21,8 +21,8 @@ MonoBehaviour:
   weaponScale: {x: 1, y: 1, z: 1}
   worldScale: {x: 1, y: 1, z: 1}
   weaponBehavior: {fileID: 11400000, guid: f7eb8fc4b9e20b147a3f956d7bcf7137, type: 2}
-  damage: 10
+  damage: 100
   attackSpeed: 1
   rotation: -57
   healthRestore: 0
-  manaRestore: 0
+  pickupSound: {fileID: 0}
