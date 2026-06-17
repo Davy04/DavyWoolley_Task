@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 453802}
   - component: {fileID: 19864940}
   - component: {fileID: 19915990}
+  - component: {fileID: 7481316850006937388}
   m_Layer: 0
   m_Name: StarBurst2D
   m_TagString: Untagged
@@ -4880,6 +4881,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &7481316850006937388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a5df62677864824da809d8139b751ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ExplosionEffect
+  lifetime: 1
 --- !u!1 &175694
 GameObject:
   m_ObjectHideFlags: 0
