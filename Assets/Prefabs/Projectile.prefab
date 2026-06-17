@@ -171,4 +171,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Projectile
   rb: {fileID: 2269757294788940401}
   explosionPrefab: {fileID: 157776, guid: 82bf03917e16d3d4cad30518cca28308, type: 3}
+  impactClip: {fileID: 8300000, guid: 321feb9f51af885488e5ed433aecd467, type: 3}
   lifetime: 4
