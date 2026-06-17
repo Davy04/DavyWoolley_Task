@@ -473,6 +473,7 @@ GameObject:
   - component: {fileID: 3375699400033199130}
   - component: {fileID: 5434671186230229938}
   - component: {fileID: 2942402262515773076}
+  - component: {fileID: -4429510765627769249}
   m_Layer: 6
   m_Name: Ninja_Character_5
   m_TagString: Untagged
@@ -599,6 +600,7 @@ MonoBehaviour:
   attackRange: 1.5
   attackCooldown: 1.5
   animator: {fileID: 6601790112256533271}
+  attackClip: {fileID: 8300000, guid: 54abfb60d77a66c4eb05ccbb7ee3f606, type: 3}
 --- !u!114 &1599327949524838170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -654,10 +656,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc2d9f59a98e13541a36bdb20be8f09b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyLoot
-  worldItemPrefab: {fileID: 5668574054053688900, guid: ca3760673ebf22d4eaaeb30795be5c7c, type: 3}
-  coinItem: {fileID: 11400000, guid: 09c05e49690de1849a24517915ebda39, type: 2}
   coinsPerHit: 3
-  coinThrowForce: 4
+  worldItemPrefab: {fileID: 5668574054053688900, guid: ca3760673ebf22d4eaaeb30795be5c7c, type: 3}
   deathLoot:
   - item: {fileID: 11400000, guid: 55bce0782f81b224a90b7cf4cd77c865, type: 2}
     chance: 1
@@ -694,6 +694,21 @@ MonoBehaviour:
   movementComponent: {fileID: 1599327949524838170}
   force: 6
   duration: 0.2
+--- !u!114 &-4429510765627769249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8182391654813930393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36634f91226bfc047921b94f2a0e157e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealthAudio
+  damageClip: {fileID: 8300000, guid: 956269604623c34418993daf6caba979, type: 3}
+  deathClip: {fileID: 8300000, guid: 133ce21485ddfeb45b7adcd685d657de, type: 3}
+  healClip: {fileID: 8300000, guid: ea32059ab075953488b79db03c1e0441, type: 3}
 --- !u!1 &9045637608870736022
 GameObject:
   m_ObjectHideFlags: 0
