@@ -46,4 +46,5 @@ MonoBehaviour:
   tipFlashDuration: 0.18
   projectilePrefab: {fileID: 4815130848404494264, guid: 2d631ba60e4590d46b72774668aceed6, type: 3}
   projectileSpeed: 8
-  projectileDamage: 10
+  projectileDamage: 40
+  shootClip: {fileID: 8300000, guid: 96bbf34d7aee725449bb8a5f1a46bfbb, type: 3}
