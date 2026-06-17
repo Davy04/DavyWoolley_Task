@@ -24,6 +24,9 @@ public class WandBehavior : WeaponBehavior
     public float projectileSpeed  = 8f;
     public int   projectileDamage = 10;
 
+    [Header("Audio")]
+    public AudioClip shootClip;
+
     public override IEnumerator Perform(PlayerAttack ctx)
     {
         ctx.WeaponParent.IsAttacking = true;
@@ -31,7 +34,6 @@ public class WandBehavior : WeaponBehavior
         Vector3 baseLocalPos = ctx.WeaponParent.transform.localPosition;
         Vector3 aimDir       = ctx.WeaponParent.transform.right;
 
-        // Phase 1: windup
         float elapsed = 0f;
         while (elapsed < windupDuration)
         {
@@ -43,7 +45,6 @@ public class WandBehavior : WeaponBehavior
             yield return null;
         }
 
-        // Phase 2: thrust + flash
         Vector3 pulledPos = baseLocalPos - aimDir * pullBackDistance;
         Vector3 thrustPos  = baseLocalPos + aimDir * thrustDistance;
 
@@ -63,7 +64,6 @@ public class WandBehavior : WeaponBehavior
         ctx.StartCoroutine(TipFlash(ctx));
         SpawnProjectile(ctx, aimDir);
 
-        // Phase 3: retorno
         elapsed = 0f;
         while (elapsed < returnDuration)
         {
@@ -115,12 +115,20 @@ public class WandBehavior : WeaponBehavior
 
     private void SpawnProjectile(PlayerAttack ctx, Vector3 aimDir)
     {
-        if (projectilePrefab == null) return;
+        AudioManager.Instance?.PlaySFX(shootClip);
 
         Vector3 pos = ctx.ProjectileSpawnPoint != null
             ? ctx.ProjectileSpawnPoint.position
             : ctx.WeaponParent.transform.position;
 
+        if (ProjectilePool.Instance != null)
+        {
+            ProjectilePool.Instance.Spawn(pos, aimDir, projectileSpeed, projectileDamage);
+            return;
+        }
+
+        // Fallback (sem pool na cena): instancia direto.
+        if (projectilePrefab == null) return;
         GameObject obj = Instantiate(projectilePrefab, pos, Quaternion.identity);
         obj.GetComponent<Projectile>()?.Initialize(aimDir, projectileSpeed, projectileDamage);
     }

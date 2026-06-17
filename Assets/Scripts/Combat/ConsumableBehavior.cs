@@ -8,17 +8,14 @@ public class ConsumableBehavior : WeaponBehavior
 
     public override IEnumerator Perform(PlayerAttack context)
     {
-        InventorySlot slot = InventoryManager.Instance?.GetSelectedSlot();
-        if (slot == null || slot.transform.childCount == 0) yield break;
-
-        InventoryItem invItem = slot.transform.GetChild(0).GetComponent<InventoryItem>();
-        if (invItem == null || invItem.item == null) yield break;
+        Item item = InventoryManager.Instance?.CurrentItem;
+        if (item == null) yield break;
 
         Health health = context.PlayerHealth;
         if (health == null || health.Current >= health.Max) yield break;
 
-        health.Heal(invItem.item.healthRestore);
-        invItem.ConsumeOne();
+        health.Heal(item.healthRestore);
+        InventoryManager.Instance.ConsumeCurrent();
 
         yield return new WaitForSeconds(useCooldown);
     }
