@@ -9,36 +9,34 @@ public enum ItemType
 [CreateAssetMenu(menuName = "Scriptable Object/Item")]
 public class Item : ScriptableObject
 {
-    [Header("Geral")]
+    [Header("General")]
     public string itemName = "New Item";
     [TextArea] public string description;
     public Sprite icon;
     public ItemType type;
     public bool stackable;
     public int maxStack = 1;
+    public Vector3 weaponScale = Vector3.one;
 
     [Header("Weapon")]
     public int damage;
     public float attackSpeed = 1f;
+    public float rotation;
 
     [Header("Consumable")]
     public int healthRestore;
     public int manaRestore;
 
-    // Executa o efeito do item. Retorna true se o item deve ser consumido (gasto) ao usar.
     public bool Use(GameObject user)
     {
         switch (type)
         {
             case ItemType.Weapon:
-                Debug.Log($"Equipando arma '{itemName}' (dano: {damage}, velocidade: {attackSpeed}).");
-                // Uma arma é equipada, não consumida.
+                Debug.Log($"Equipping weapon '{itemName}' (damage: {damage}, speed: {attackSpeed}).");
                 return false;
 
             case ItemType.Consumable:
-                Debug.Log($"Consumindo '{itemName}' (+{healthRestore} HP, +{manaRestore} MP).");
-                // Aqui você aplicaria os efeitos no 'user' (ex.: user.GetComponent<Health>().Heal(healthRestore)).
-                // Um consumível é gasto ao usar.
+                Debug.Log($"Consuming '{itemName}' (+{healthRestore} HP, +{manaRestore} MP).");
                 return true;
         }
 

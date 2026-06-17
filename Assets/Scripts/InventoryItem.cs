@@ -4,19 +4,16 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// Item da UI do inventário: cuida do arraste (drag-n-drop) e dos dados/uso do item.
-// Fica num GameObject com uma Image, dentro de um InventorySlot.
-// - Botão esquerdo: arrastar.
-// - Botão direito: usar o item (equipar arma / consumir consumível).
 [RequireComponent(typeof(Image))]
 public class InventoryItem : MonoBehaviour,
-    IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+    IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler,
+    IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Dados")]
     public Item item;
     public int count = 1;
 
-    [Tooltip("Texto opcional que mostra a quantidade de itens empilháveis.")]
+    [Tooltip("Optional text showing the count of stackable items.")]
     public TMP_Text countText;
 
     public Image image;
@@ -33,11 +30,16 @@ public class InventoryItem : MonoBehaviour,
         Initialize(item, count);
     }
 
-    // Define qual item este slot da UI representa e atualiza o visual.
     public void Initialize(Item newItem, int amount = 1)
     {
         item = newItem;
         count = amount;
+        RefreshUI();
+    }
+
+    public void AddCount(int amount)
+    {
+        count = Mathf.Min(count + amount, item != null ? item.maxStack : int.MaxValue);
         RefreshUI();
     }
 
@@ -57,10 +59,20 @@ public class InventoryItem : MonoBehaviour,
         }
     }
 
-    // --- Drag-n-drop ---
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (item != null && InventoryManager.Instance != null && InventoryManager.Instance.IsBagOpen)
+            TooltipUI.Instance?.Show(item, transform as RectTransform);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        TooltipUI.Instance?.Hide();
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        TooltipUI.Instance?.Hide();
         parentAfterDrag = transform.parent;
         transform.SetParent(transform.root);
         transform.SetAsLastSibling();
@@ -76,20 +88,20 @@ public class InventoryItem : MonoBehaviour,
     {
         transform.SetParent(parentAfterDrag);
         image.raycastTarget = true;
+        InventoryManager.Instance?.NotifySlotChanged();
     }
-
-    // --- Uso do item ---
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        // Só reage ao clique com o botão direito; o esquerdo é usado para arrastar.
         if (eventData.button != PointerEventData.InputButton.Right)
             return;
 
-        UseItem();
+        if (InventoryManager.Instance != null && InventoryManager.Instance.IsBagOpen)
+            InventoryManager.Instance.DropItem(this);
+        else
+            UseItem();
     }
 
-    // Usa o item. Consumíveis diminuem a contagem (e somem ao zerar); armas só equipam.
     public void UseItem()
     {
         if (item == null)
@@ -103,10 +115,12 @@ public class InventoryItem : MonoBehaviour,
             if (count <= 0)
             {
                 Destroy(gameObject);
+                InventoryManager.Instance?.SaveInventory();
                 return;
             }
         }
 
         RefreshUI();
+        InventoryManager.Instance?.SaveInventory();
     }
 }
