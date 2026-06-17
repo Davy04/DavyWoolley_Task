@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class PlayerAttack : MonoBehaviour
@@ -30,13 +31,20 @@ public class PlayerAttack : MonoBehaviour
     private void Update()
     {
         if (!_canAttack || Mouse.current == null) return;
+        if (Time.timeScale == 0f) return; // jogo pausado / game over
         if (InventoryManager.Instance != null && InventoryManager.Instance.IsBagOpen) return;
+        if (IsPointerOverUI()) return; // clique em botão de UI não deve atacar
 
         WeaponBehavior behavior = GetCurrentBehavior();
         if (behavior == null) return;
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
             StartCoroutine(PerformAttack(behavior));
+    }
+
+    private static bool IsPointerOverUI()
+    {
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 
     private IEnumerator PerformAttack(WeaponBehavior behavior)
@@ -48,9 +56,6 @@ public class PlayerAttack : MonoBehaviour
 
     private WeaponBehavior GetCurrentBehavior()
     {
-        InventorySlot slot = InventoryManager.Instance?.GetSelectedSlot();
-        if (slot == null || slot.transform.childCount == 0) return null;
-        InventoryItem held = slot.transform.GetChild(0).GetComponent<InventoryItem>();
-        return held?.item?.weaponBehavior;
+        return InventoryManager.Instance != null ? InventoryManager.Instance.CurrentBehavior : null;
     }
 }
