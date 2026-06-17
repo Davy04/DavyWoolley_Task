@@ -10,6 +10,11 @@ public class WorldItem : MonoBehaviour
     [SerializeField] private float bobAmplitude = 0.08f;
     [SerializeField] private float bobFrequency = 2f;
 
+    [Header("Obstáculos (construções)")]
+    [Tooltip("Layers das construções. Se o item assentar dentro de uma, ele é puxado de volta para um ponto alcançável.")]
+    [SerializeField] private LayerMask obstacleMask;
+    [SerializeField] private float obstacleCheckRadius = 0.12f;
+
     [Header("Pre-placed (deixe vazio se for spawnar por código)")]
     [SerializeField] private Item preplacedItem;
     [SerializeField] private int preplacedCount = 1;
@@ -21,6 +26,8 @@ public class WorldItem : MonoBehaviour
     private bool _isBeingAttracted;
     private bool _magnetImmune;
     private float _pickupBlockedUntil;
+    private System.Action _onDespawn;
+    private Vector3 _spawnOrigin;
 
     public bool CanPickup      => _canPickup && Time.time >= _pickupBlockedUntil;
     public bool CanBeAttracted => CanPickup && !_magnetImmune;
@@ -56,18 +63,49 @@ public class WorldItem : MonoBehaviour
         _count = count;
         _magnetImmune = magnetImmune;
         _pickupBlockedUntil = Time.time + pickupBlockSeconds;
+        _spawnOrigin = transform.position; // ponto alcançável (quem dropou estava aqui)
 
         ApplyVisual(item);
 
         if (rb != null)
         {
             rb.gravityScale = 0f;
+            rb.bodyType = RigidbodyType2D.Dynamic; // garante arremesso mesmo em instâncias reusadas do pool
+            rb.linearVelocity = Vector2.zero;
             float force = throwForceOverride > 0f ? throwForceOverride : throwForce;
             Vector2 dir = direction == Vector2.zero ? Random.insideUnitCircle.normalized : direction.normalized;
             rb.AddForce(dir * force, ForceMode2D.Impulse);
         }
 
         StartCoroutine(EnablePickupAfterDelay());
+    }
+
+    /// <summary>
+    /// Sets up a pooled instance. <paramref name="onDespawn"/> is invoked when the item
+    /// leaves the scene (picked up or recycled), so the pool can reclaim it.
+    /// </summary>
+    public void InitializePooled(Item item, int count, float throwForceOverride, System.Action onDespawn)
+    {
+        _onDespawn = onDespawn;
+        _canPickup = false;
+        _isBeingAttracted = false;
+        StopAllCoroutines();
+        Initialize(item, count, throwForceOverride);
+    }
+
+    /// <summary>Removes the item: returns it to its pool if pooled, otherwise destroys it.</summary>
+    public void Despawn()
+    {
+        if (_onDespawn != null)
+        {
+            System.Action callback = _onDespawn;
+            _onDespawn = null;
+            callback();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void AttractToward(Vector3 target, float speed)
@@ -96,8 +134,27 @@ public class WorldItem : MonoBehaviour
             rb.bodyType = RigidbodyType2D.Kinematic;
         }
 
+        ResolveOutOfObstacles();
+
         _origin = transform.position;
         _canPickup = true;
+    }
+
+    /// <summary>
+    /// Se o item assentou dentro de uma construção, puxa-o de volta na direção de quem o
+    /// dropou (espaço livre) até sair do obstáculo — assim ele nunca fica inalcançável.
+    /// </summary>
+    private void ResolveOutOfObstacles()
+    {
+        if (obstacleMask == 0) return;
+
+        for (int i = 0; i < 12; i++)
+        {
+            if (Physics2D.OverlapCircle(transform.position, obstacleCheckRadius, obstacleMask) == null)
+                return;
+
+            transform.position = Vector3.MoveTowards(transform.position, _spawnOrigin, 0.2f);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other) => TryPickup(other);
@@ -112,7 +169,10 @@ public class WorldItem : MonoBehaviour
         int added = InventoryManager.Instance.AddItem(_item, _count);
         _count -= added;
 
+        if (added > 0)
+            AudioManager.Instance?.PlaySFX(_item.pickupSound);
+
         if (_count <= 0)
-            Destroy(gameObject);
+            Despawn();
     }
 }
