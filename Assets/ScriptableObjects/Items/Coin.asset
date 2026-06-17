@@ -25,3 +25,4 @@ MonoBehaviour:
   attackSpeed: 0
   rotation: 0
   healthRestore: 0
+  pickupSound: {fileID: 0}
