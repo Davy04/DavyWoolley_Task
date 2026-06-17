@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Json;
@@ -47,10 +48,22 @@ public class InventoryManager : MonoBehaviour
     [Tooltip("Seconds the dropped item cannot be picked up (game time, after the bag closes).")]
     public float dropPickupBlock = 0.8f;
 
+    [Tooltip("Sound played when an item is dropped to the world.")]
+    public AudioClip dropSound;
+
     public bool IsBagOpen { get; private set; }
+
+    public Item CurrentItem => _currentItem != null ? _currentItem.item : null;
+
+    public WeaponBehavior CurrentBehavior =>
+        _currentItem != null && _currentItem.item != null ? _currentItem.item.weaponBehavior : null;
+
+    // Fired both when the selected slot changes and when its contents change.
+    public event Action OnSelectedItemChanged;
 
     private int _selectedSlotIndex = -1;
     private string _savePath;
+    private InventoryItem _currentItem;
 
     private static readonly Key[] HotbarKeys =
     {
@@ -135,24 +148,35 @@ public class InventoryManager : MonoBehaviour
 
     private void RefreshWeapon()
     {
-        if (weaponRenderer == null)
-            return;
-
         InventorySlot slot = GetSelectedSlot();
-        if (slot == null || slot.transform.childCount == 0)
+        InventoryItem held = slot != null && slot.transform.childCount > 0
+            ? slot.transform.GetChild(0).GetComponent<InventoryItem>()
+            : null;
+
+        _currentItem = held;
+
+        if (weaponRenderer != null)
         {
-            weaponRenderer.sprite = null;
-            weaponRenderer.transform.localScale = Vector3.one;
-            weaponRenderer.transform.localRotation = Quaternion.identity;
-            return;
+            if (held != null && held.item != null)
+            {
+                weaponRenderer.sprite = held.item.icon;
+                weaponRenderer.transform.localScale = held.item.weaponScale;
+                weaponRenderer.transform.localRotation = Quaternion.Euler(0f, 0f, held.item.rotation);
+            }
+            else
+            {
+                weaponRenderer.sprite = null;
+                weaponRenderer.transform.localScale = Vector3.one;
+                weaponRenderer.transform.localRotation = Quaternion.identity;
+            }
         }
 
-        InventoryItem held = slot.transform.GetChild(0).GetComponent<InventoryItem>();
-        if (held == null) return;
+        OnSelectedItemChanged?.Invoke();
+    }
 
-        weaponRenderer.sprite = held.item.icon;
-        weaponRenderer.transform.localScale = held.item.weaponScale;
-        weaponRenderer.transform.localRotation = Quaternion.Euler(0f, 0f, held.item.rotation);
+    public void ConsumeCurrent()
+    {
+        _currentItem?.ConsumeOne();
     }
 
     public InventorySlot GetSelectedSlot()
@@ -184,7 +208,6 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
-        // 2. Put whatever is left into empty slots, one stack at a time.
         while (remaining > 0)
         {
             InventorySlot freeSlot = GetFirstEmptySlot();
@@ -242,7 +265,7 @@ public class InventoryManager : MonoBehaviour
             return;
         }
 
-        Vector2 dir = Random.insideUnitCircle.normalized;
+        Vector2 dir = UnityEngine.Random.insideUnitCircle.normalized;
 
         Vector3 basePosition = dropPoint != null ? dropPoint.position : transform.position;
         Vector3 spawnPosition = basePosition + (Vector3)(dir * dropDistance);
@@ -254,6 +277,8 @@ public class InventoryManager : MonoBehaviour
             magnetImmune: true,
             direction: dir,
             pickupBlockSeconds: dropPickupBlock);
+
+        AudioManager.Instance?.PlaySFX(dropSound);
     }
 
     public void SaveInventory()
