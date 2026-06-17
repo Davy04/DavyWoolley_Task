@@ -49,9 +49,9 @@ public class TooltipUI : MonoBehaviour
     {
         return item.type switch
         {
-            ItemType.Weapon => $"Damage: {item.damage}\nAttack Speed: {item.attackSpeed}",
-            ItemType.Consumable => $"HP: +{item.healthRestore}\nMP: +{item.manaRestore}",
+            ItemType.Wand    => $"Damage: {item.damage}\nAttack Speed: {item.attackSpeed}",
+            ItemType.Consumable => $"HP: +{item.healthRestore}",
             _ => string.Empty
         };
-    }
+    }   
 }

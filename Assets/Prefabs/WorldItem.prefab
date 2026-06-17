@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.78, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.6666667, y: 0.6666667, z: 0.6666667}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -80,8 +80,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -863533887
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 33e8101e2e43767498f78399b23abee6, type: 3}
@@ -112,6 +112,8 @@ MonoBehaviour:
   pickupDelay: 0.5
   bobAmplitude: 0.08
   bobFrequency: 2
+  preplacedItem: {fileID: 11400000, guid: b3dd32cc14efc0c47916924ea6040518, type: 2}
+  preplacedCount: 1
 --- !u!50 &2771161344741179577
 Rigidbody2D:
   serializedVersion: 5
