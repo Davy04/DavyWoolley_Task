@@ -37,7 +37,6 @@ public class InventoryItem : MonoBehaviour,
         RefreshUI();
     }
 
-    /// <summary>True while this stack can still hold more of its item.</summary>
     public bool HasSpace => item != null && count < item.maxStack;
 
     /// <summary>
@@ -111,21 +110,6 @@ public class InventoryItem : MonoBehaviour,
 
         if (InventoryManager.Instance != null && InventoryManager.Instance.IsBagOpen)
             InventoryManager.Instance.DropItem(this);
-        else
-            UseItem();
-    }
-
-    public void UseItem()
-    {
-        if (item == null)
-            return;
-
-        bool consumed = item.Use(gameObject);
-
-        if (consumed)
-            ConsumeOne();
-        else
-            RefreshUI();
     }
 
     public void ConsumeOne()
