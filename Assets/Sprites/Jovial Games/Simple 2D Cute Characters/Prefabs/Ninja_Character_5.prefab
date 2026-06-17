@@ -691,6 +691,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Knockback
   rb: {fileID: 7413440170003277415}
+  movementComponent: {fileID: 1599327949524838170}
   force: 6
   duration: 0.2
 --- !u!1 &9045637608870736022

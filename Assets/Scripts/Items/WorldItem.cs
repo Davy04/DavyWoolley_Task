@@ -19,11 +19,10 @@ public class WorldItem : MonoBehaviour
     private Vector3 _origin;
     private bool _canPickup;
     private bool _isBeingAttracted;
-    private bool _playerNearby;
-    private bool _blockPickup;
     private bool _magnetImmune;
+    private float _pickupBlockedUntil;
 
-    public bool CanPickup     => _canPickup && !_blockPickup;
+    public bool CanPickup      => _canPickup && Time.time >= _pickupBlockedUntil;
     public bool CanBeAttracted => CanPickup && !_magnetImmune;
 
     private void Start()
@@ -32,12 +31,7 @@ public class WorldItem : MonoBehaviour
         {
             _item  = preplacedItem;
             _count = preplacedCount;
-
-            if (spriteRenderer != null)
-            {
-                spriteRenderer.sprite = preplacedItem.icon;
-                spriteRenderer.transform.localScale = preplacedItem.worldScale;
-            }
+            ApplyVisual(preplacedItem);
 
             if (rb != null)
                 rb.bodyType = RigidbodyType2D.Kinematic;
@@ -55,23 +49,22 @@ public class WorldItem : MonoBehaviour
         transform.position = _origin + Vector3.up * Mathf.Sin(Time.time * bobFrequency) * bobAmplitude;
     }
 
-    public void Initialize(Item item, int count, float throwForceOverride = 0f, bool magnetImmune = false)
+    public void Initialize(Item item, int count, float throwForceOverride = 0f,
+        bool magnetImmune = false, Vector2 direction = default, float pickupBlockSeconds = 0f)
     {
         _item = item;
         _count = count;
         _magnetImmune = magnetImmune;
+        _pickupBlockedUntil = Time.time + pickupBlockSeconds;
 
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.sprite = item.icon;
-            spriteRenderer.transform.localScale = item.worldScale;
-        }
+        ApplyVisual(item);
 
         if (rb != null)
         {
             rb.gravityScale = 0f;
             float force = throwForceOverride > 0f ? throwForceOverride : throwForce;
-            rb.AddForce(Random.insideUnitCircle.normalized * force, ForceMode2D.Impulse);
+            Vector2 dir = direction == Vector2.zero ? Random.insideUnitCircle.normalized : direction.normalized;
+            rb.AddForce(dir * force, ForceMode2D.Impulse);
         }
 
         StartCoroutine(EnablePickupAfterDelay());
@@ -84,9 +77,18 @@ public class WorldItem : MonoBehaviour
         rb.MovePosition(newPos);
     }
 
+    private void ApplyVisual(Item item)
+    {
+        if (spriteRenderer == null) return;
+        spriteRenderer.sprite = item.icon;
+        spriteRenderer.transform.localScale = item.worldScale;
+    }
+
     private IEnumerator EnablePickupAfterDelay()
     {
-        yield return new WaitForSecondsRealtime(pickupDelay);
+        // WaitForSeconds (tempo de jogo) — não conta durante a pausa da bag,
+        // então o arremesso só acontece depois que o jogo volta a rodar.
+        yield return new WaitForSeconds(pickupDelay);
 
         if (rb != null)
         {
@@ -96,20 +98,15 @@ public class WorldItem : MonoBehaviour
 
         _origin = transform.position;
         _canPickup = true;
-
-        // Bloqueia pickup imediato apenas para itens dropados pelo player (magnetImmune).
-        if (_playerNearby && _magnetImmune)
-            _blockPickup = true;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other) => TryPickup(other);
+    private void OnTriggerStay2D(Collider2D other)  => TryPickup(other);
+
+    private void TryPickup(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
-
-        _playerNearby = true;
-
-        if (!_canPickup || _blockPickup) return;
-
+        if (!CanPickup) return;
         if (InventoryManager.Instance == null) return;
 
         int added = InventoryManager.Instance.AddItem(_item, _count);
@@ -117,13 +114,5 @@ public class WorldItem : MonoBehaviour
 
         if (_count <= 0)
             Destroy(gameObject);
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (!other.CompareTag("Player")) return;
-
-        _playerNearby = false;
-        _blockPickup = false;
     }
 }

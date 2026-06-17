@@ -7,6 +7,7 @@ public class WeaponParent : MonoBehaviour
     public event Action<bool> OnFacingChanged;
 
     public bool IsAttacking { get; set; }
+    public bool FacingLeft => _facingLeft;
 
     private bool _facingLeft;
 

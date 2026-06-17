@@ -38,6 +38,15 @@ public class InventoryManager : MonoBehaviour
     [Tooltip("Transform used as spawn point when dropping items.")]
     public Transform dropPoint;
 
+    [Tooltip("How far from the player the dropped item spawns.")]
+    public float dropDistance = 0.6f;
+
+    [Tooltip("Force applied to the item when dropped.")]
+    public float dropForce = 4f;
+
+    [Tooltip("Seconds the dropped item cannot be picked up (game time, after the bag closes).")]
+    public float dropPickupBlock = 0.8f;
+
     public bool IsBagOpen { get; private set; }
 
     private int _selectedSlotIndex = -1;
@@ -233,9 +242,18 @@ public class InventoryManager : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPosition = dropPoint != null ? dropPoint.position : transform.position;
+        Vector2 dir = Random.insideUnitCircle.normalized;
+
+        Vector3 basePosition = dropPoint != null ? dropPoint.position : transform.position;
+        Vector3 spawnPosition = basePosition + (Vector3)(dir * dropDistance);
+
         GameObject obj = Instantiate(worldItemPrefab, spawnPosition, Quaternion.identity);
-        obj.GetComponent<WorldItem>().Initialize(item, count, magnetImmune: true);
+        obj.GetComponent<WorldItem>().Initialize(
+            item, count,
+            throwForceOverride: dropForce,
+            magnetImmune: true,
+            direction: dir,
+            pickupBlockSeconds: dropPickupBlock);
     }
 
     public void SaveInventory()
