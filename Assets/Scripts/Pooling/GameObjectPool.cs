@@ -19,9 +19,11 @@ public class GameObjectPool
 
     public GameObject Get(Vector3 position, Quaternion rotation)
     {
-        GameObject go = _free.Count > 0
-            ? _free.Dequeue()
-            : Object.Instantiate(_prefab, _parent);
+        GameObject go = null;
+
+
+        if (go == null)
+            go = Object.Instantiate(_prefab, _parent);
 
         go.transform.SetPositionAndRotation(position, rotation);
         go.SetActive(true);
