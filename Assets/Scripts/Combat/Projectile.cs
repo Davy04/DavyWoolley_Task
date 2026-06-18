@@ -10,11 +10,13 @@ public class Projectile : MonoBehaviour
     private int _damage;
     private float _despawnTime;
     private System.Action _onDespawn;
+    private bool _despawned;
 
     public void Initialize(Vector2 direction, float speed, int damage)
     {
         _damage = damage;
         _despawnTime = Time.time + lifetime;
+        _despawned = false;
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0f, 0f, angle);
@@ -69,6 +71,10 @@ public class Projectile : MonoBehaviour
 
     private void Despawn()
     {
+        if (_despawned)
+            return;
+        _despawned = true;
+
         if (rb != null)
             rb.linearVelocity = Vector2.zero;
 
