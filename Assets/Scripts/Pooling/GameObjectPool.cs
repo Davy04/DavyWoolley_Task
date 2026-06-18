@@ -21,6 +21,8 @@ public class GameObjectPool
     {
         GameObject go = null;
 
+        while (_free.Count > 0 && go == null)
+            go = _free.Dequeue();
 
         if (go == null)
             go = Object.Instantiate(_prefab, _parent);
