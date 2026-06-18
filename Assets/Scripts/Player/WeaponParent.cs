@@ -19,6 +19,7 @@ public class WeaponParent : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0f) return; // jogo pausado: não mira nem vira
         if (IsAttacking || Mouse.current == null)
             return;
 
