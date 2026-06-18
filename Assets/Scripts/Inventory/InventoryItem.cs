@@ -19,10 +19,14 @@ public class InventoryItem : MonoBehaviour,
     public Image image;
     [HideInInspector] public Transform parentAfterDrag;
 
+    private Canvas _canvas;
+
     private void Awake()
     {
         if (image == null)
             image = GetComponent<Image>();
+
+        _canvas = GetComponentInParent<Canvas>();
     }
 
     private void Start()
@@ -85,15 +89,34 @@ public class InventoryItem : MonoBehaviour,
     public void OnBeginDrag(PointerEventData eventData)
     {
         TooltipUI.Instance?.Hide();
+
+        if (_canvas == null)
+            _canvas = GetComponentInParent<Canvas>();
+
         parentAfterDrag = transform.parent;
-        transform.SetParent(transform.root);
+        transform.SetParent(_canvas != null ? _canvas.transform : transform.root);
         transform.SetAsLastSibling();
         image.raycastTarget = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = Mouse.current.position.value;
+        if (_canvas == null)
+        {
+            transform.position = eventData.position;
+            return;
+        }
+
+        // Convert the screen pointer position into a point inside the canvas.
+        // Using eventData.position keeps it correct for any render mode (Overlay,
+        // Screen Space - Camera or World Space) instead of teleporting the item.
+        Camera cam = _canvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : _canvas.worldCamera;
+
+        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                _canvas.transform as RectTransform, eventData.position, cam, out Vector3 worldPoint))
+            transform.position = worldPoint;
     }
 
     public void OnEndDrag(PointerEventData eventData)
