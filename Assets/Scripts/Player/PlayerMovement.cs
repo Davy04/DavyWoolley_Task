@@ -1,27 +1,34 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class Movement : MonoBehaviour
+/// <summary>
+/// Moves the player's Rigidbody2D. Deliberately "dumb": it owns no input logic and no speed
+/// value of its own — it reads direction from an <see cref="IMovementInput"/> and the final
+/// speed from <see cref="PlayerStats"/>, so upgrades affect movement without this class
+/// knowing they exist.
+/// </summary>
+[RequireComponent(typeof(Rigidbody2D))]
+public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 0.5f;
     [SerializeField] private Rigidbody2D rb;
-    private Vector2 input;
+    [SerializeField] private PlayerStats stats;
 
-    void Update()
+    private IMovementInput _input;
+
+    private void Awake()
     {
-        if (Keyboard.current == null)
-        {
-            input = Vector2.zero;
-            return;
-        }
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
 
-        input = new Vector2(
-            (Keyboard.current.dKey.isPressed ? 1 : 0) - (Keyboard.current.aKey.isPressed ? 1 : 0),
-            (Keyboard.current.wKey.isPressed ? 1 : 0) - (Keyboard.current.sKey.isPressed ? 1 : 0));
+        _input = GetComponent<IMovementInput>();
+        if (_input == null)
+            Debug.LogError($"{nameof(PlayerMovement)} requires a component implementing {nameof(IMovementInput)}.", this);
     }
 
     private void FixedUpdate()
     {
-        rb.linearVelocity = input.normalized * speed;
+        if (_input == null || stats == null || stats.MoveSpeed == null)
+            return;
+
+        rb.linearVelocity = _input.Direction * stats.MoveSpeed.Value;
     }
 }
