@@ -1,9 +1,10 @@
 # BulletCrash
 
 Projeto Unity (2D) em transformação: começou como teste técnico (top-down com inventário,
-clique-pra-atacar) e está virando um **bullet heaven / auto-battler** no estilo
-*Vampire Survivors* e *MegaBonk*. O player **só se movimenta e escolhe upgrades**;
-o jogo **mira e atira sozinho**.
+clique-pra-atacar) e está virando um **arena .io shooter** no estilo *diep.io* e *archer.io*.
+O player **só se movimenta**; o jogo **mira e atira sozinho**. Progressão via **árvore de
+evolução** (stats + build paths) dentro da sessão — sem meta-progressão entre sessões.
+Plataforma-alvo: **WebGL** (browser-first — otimização é prioridade em toda decisão técnica).
 
 > **Fonte de verdade do design:** [GAME_DESIGN.md](GAME_DESIGN.md) (GDD completo — loop,
 > sistemas, paleta de UI, telas, notas de arquitetura). **Ler no início de toda task** e
@@ -45,13 +46,14 @@ Este comportamento é **padrão do projeto** — vale em toda sessão, não prec
 - **Singletons:** `InventoryManager.Instance`, `AudioManager.Instance`. Tolerados, mas
   preferir injeção/eventos em sistemas novos; não criar singleton novo sem justificar.
 
-## Direção do redesign (survivor roguelike)
+## Direção do redesign (arena .io)
 
 Mudanças estruturais em relação à base:
-- **Auto-fire + auto-targeting** substitui o clique do mouse de `PlayerAttack`.
-- **Sistema de progressão**: XP, level-up, escolha de 3 upgrades (roguelike run).
-- **Spawn por waves/tempo** com dificuldade escalando, substituindo o `EnemySpawner` fixo.
-- **Meta-progressão** (roguelite) entre runs — definir depois.
+- **Disparo manual com mira pelo mouse:** botão esquerdo mantido pressionado dispara continuamente; projétil vai na direção do cursor. Substitui o sistema de clique-pra-atacar da base.
+- **Árvore de evolução**: XP → pontos de evolução → stats base (empilháveis) + build paths (modificam comportamento da arma). Detalhes no GDD.
+- **Arena fechada** com objetos destrutíveis e bots com IA simples (sem NavMesh).
+- **Sem meta-progressão** — sessão termina na morte, player recomeça do zero.
+- **WebGL obrigatório**: Object Pool para tudo que spawna, sem Instantiate/Destroy em hot path, sprites em atlas, IA leve.
 
 ## Estrutura de pastas (`Assets/Scripts/`)
 
