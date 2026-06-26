@@ -56,6 +56,31 @@ public class PlayerStats : MonoBehaviour
         _health.Initialize(Mathf.RoundToInt(MaxHealth.Value));
     }
 
+    /// <summary>Resolves a <see cref="PlayerStatType"/> to its live <see cref="Stat"/>.</summary>
+    public Stat GetStat(PlayerStatType type) => type switch
+    {
+        PlayerStatType.MaxHealth      => MaxHealth,
+        PlayerStatType.HealthRegen    => HealthRegen,
+        PlayerStatType.MoveSpeed      => MoveSpeed,
+        PlayerStatType.BulletSpeed    => BulletSpeed,
+        PlayerStatType.BulletDamage   => BulletDamage,
+        PlayerStatType.BulletDistance => BulletDistance,
+        PlayerStatType.Reload         => Reload,
+        _ => null
+    };
+
+    /// <summary>
+    /// Applies a data-authored bonus to the matching stat. The single entry point shared by
+    /// the evolution tree and the stat-point system, so max-HP changes always resync Health.
+    /// </summary>
+    public void ApplyBonus(StatBonus bonus, object source)
+    {
+        GetStat(bonus.Stat).AddModifier(bonus.ToModifier(source));
+
+        if (bonus.Stat == PlayerStatType.MaxHealth)
+            RefreshMaxHealth();
+    }
+
     private void ApplyRegen()
     {
         if (HealthRegen.Value <= 0f) return;

@@ -92,26 +92,32 @@ Cada nó pode ser comprado múltiplas vezes até um cap por sessão.
 | Range XP | +20% raio de atração | 6× |
 | Penetração | projétil atravessa +1 inimigo | 3× |
 
-#### Eixo 2 — Build paths (upgrades de arma e habilidade)
-Caminhos que mudam o comportamento do projétil ou adicionam habilidades. Cada caminho tem 3 níveis.
-Caminhos são **exclusivos entre si por slot** — o player escolhe 1 de N no slot ao desbloquear.
+#### Eixo 2 — Árvore de classes (estilo diep.io)
+Árvore **ramificada de classes** ("tanques"): em **tiers de nível fixos** o player escolhe
+1 entre N evoluções do nó atual. Cada escolha troca o `WeaponBehavior` e/ou aplica bônus
+passivos, e desbloqueia o próximo conjunto de ramificações.
 
-| Caminho | Nível 1 | Nível 2 | Nível 3 |
-|---|---|---|---|
-| Duplo Cano | 2 projéteis simultâneos | 3 projéteis (spread) | 4 projéteis (leque) |
-| Sniper | projétil 2× mais rápido | penetra todos inimigos | ricochete em parede |
-| Explosivo | projétil explode ao impacto (AoE) | AoE maior | deixa área de fogo |
-| Escudo | escudo frontal absorve 1 hit | regenera o escudo | escudo rebate projéteis |
-| Vampiro | kills restauram 2 HP | kills restauram 5 HP | 10% lifesteal do dano |
+- **Tiers fixos:** as escolhas abrem em marcos de nível (ex.: 15, 30, 45 — calibrar).
+  Entre os marcos o player só distribui pontos de stat (Eixo 1).
+- **Profundidade inicial:** 3 tiers (base → tier 1 → tier 2 → tier 3).
+- **Ramificação:** cada nó aponta para 2–4 filhos. O caminho é exclusivo — escolher um
+  filho descarta os irmãos daquele tier.
+- A escolha é **definitiva** (sem desfazer), como no diep.io.
 
-> Lista inicial — expandir conforme implementação.
+Exemplos de nós (ilustrativos — definir o conteúdo real depois):
+
+| Tier 1 (nv. 15) | Tier 2 (nv. 30) | Tier 3 (nv. 45) |
+|---|---|---|
+| Duplo Cano (2 projéteis) | Triplo / Metralhadora | Leque pesado |
+| Sniper (projétil rápido) | Penetrante | Ricochete |
+| Explosivo (AoE no impacto) | AoE maior | Área de fogo |
 
 ### Regras da árvore
-- Stats base não têm pré-requisito — sempre disponíveis
-- Build paths exigem nível mínimo para desbloquear (ex.: Duplo Cano unlock no nível 3)
-- Só 1 Build path ativo por slot (implementar no mínimo 2 slots de build futuramente)
-- A tela de evolução mostra a árvore completa com nós disponíveis destacados
-- Player não pode desfazer pontos gastos
+- Eixo 1 (stats) e Eixo 2 (classes) são **independentes** — todo nível dá ponto de stat;
+  só os tiers fixos abrem escolha de classe.
+- Um nó só é selecionável quando o player atinge o `RequiredLevel` dele.
+- A tela de evolução (roda radial) mostra a árvore; os nós disponíveis ficam destacados.
+- Escolha definitiva — não há respec.
 
 ---
 
@@ -195,8 +201,22 @@ Caminhos são **exclusivos entre si por slot** — o player escolhe 1 de N no sl
 - **Player movement (implementado):** `PlayerInputReader` (WASD/analog) → `PlayerStats` → `PlayerMovement` (FixedUpdate, Rigidbody2D). Desacoplado por interface `IMovementInput`.
 - **Stats system (implementado):** `Stat` + `StatModifier` (Flat/PercentAdd/PercentMult). Backbone dos upgrades da árvore. Fórmula: `(base + ΣFlat) × (1 + ΣPercentAdd) × Π(1 + PercentMult)`. Reutilizável.
 - **CharacterData:** ScriptableObject com stats base — nunca alterado em runtime.
-- **EvolutionTree:** ScriptableObject por nó da árvore (tipo, custo em pontos, efeito, pré-requisitos). `EvolutionManager` gerencia pontos disponíveis e aplica `StatModifier` ou ativa `BuildPath`.
-- **BuildPath:** Strategy pattern via ScriptableObject (herda `WeaponBehavior`) — cada caminho de build é uma implementação de `WeaponBehavior`. Compatível com a base existente.
+- **XP / nível (implementado — base):** `PlayerExperience` (Progression/) acumula XP, faz
+  rollover de nível com carry-over e dispara `OnXpChanged(current, required)` e `OnLevelUp(level)`.
+  Não conhece a origem do XP nem quem reage. Curva exponencial via `baseXp * growth^(level-1)`
+  (campos serializados — extrair p/ SO se precisar de curva autorável). `XpBarView` (UI/) liga
+  os eventos ao slider + texto de nível (rich text TMP). Hook futuro: `OnLevelUp` →
+  `EvolutionManager.NotifyLevelUp` e o sistema de pontos de stat.
+- **Árvore de classes (implementado — base):** grafo data-driven de `EvolutionNode` (SO):
+  cada nó referencia `WeaponBehavior` + `StatBonus[]` + filhos. `EvolutionManager` parte da
+  raiz, escuta `NotifyLevelUp(int)` e, nos tiers, dispara `OnChoicesAvailable` com os filhos
+  desbloqueados; `Choose(node)` aplica e avança. Desacoplado do XP (recebe o nível por fora)
+  e da arma (equipa via `IWeaponHolder`, implementado pelo futuro `PlayerShooter`).
+- **StatBonus + PlayerStatType:** `StatBonus` (struct serializável) nomeia um `PlayerStatType`
+  e vira `StatModifier` via `PlayerStats.ApplyBonus`. Ponte autorável entre assets e o sistema
+  de `Stat`. Reusado pelo Eixo 1 (pontos de stat) e Eixo 2 (nós da árvore).
+- **WeaponBehavior:** Strategy via ScriptableObject — cada classe da árvore aponta para uma
+  implementação. Compatível com a base existente.
 - **Bot AI:** `BotController` com estado simples (Idle → Chase → Attack). Sem NavMesh — posição calculada por `Vector2.MoveTowards` com separação de steering entre bots.
 - **XP orbs:** Pool de GameObjects, atraídos via Lerp no Update quando dentro do range.
 - **Spawner:** `ArenaSpawner` lê `ArenaConfig` (ScriptableObject) com densidade de bots e objetos por nível. Spawna fora do campo de visão do player.
