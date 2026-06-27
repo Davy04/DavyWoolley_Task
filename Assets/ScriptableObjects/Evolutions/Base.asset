@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1909dfd6f918eb4c938e3ff63a0fb58, type: 3}
+  m_Name: Base
+  m_EditorClassIdentifier: Assembly-CSharp::EvolutionNode
+  displayName: Base
+  icon: {fileID: -2311659948842064771, guid: 63029c84a8d6a6c4da151f2e8b4e670e, type: 3}
+  category: WEAPON
+  description: Dispara tudo
+  requiredLevel: 0
+  weapon: {fileID: 11400000, guid: 6da53aff8f136ce4cb0edf0db5e440d0, type: 2}
+  bonuses: []
+  children:
+  - {fileID: 11400000, guid: c024cb05d3e522c4e9915ef36917f4d5, type: 2}
