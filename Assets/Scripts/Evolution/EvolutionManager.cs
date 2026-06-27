@@ -17,6 +17,9 @@ public class EvolutionManager : MonoBehaviour
     [SerializeField] private EvolutionNode root;
     [SerializeField] private PlayerStats stats;
 
+    [Tooltip("XP source that drives the tiers. Optional — leave empty to drive levels manually.")]
+    [SerializeField] private PlayerExperience experience;
+
     /// <summary>Raised when leveling up unlocks one or more choices — the UI listens to this.</summary>
     public event Action<IReadOnlyList<EvolutionNode>> OnChoicesAvailable;
 
@@ -44,6 +47,18 @@ public class EvolutionManager : MonoBehaviour
 
         CurrentNode = root;
         Apply(root);
+    }
+
+    private void OnEnable()
+    {
+        if (experience != null)
+            experience.OnLevelUp += NotifyLevelUp;
+    }
+
+    private void OnDisable()
+    {
+        if (experience != null)
+            experience.OnLevelUp -= NotifyLevelUp;
     }
 
     /// <summary>Called by the XP system on every level-up. Opens a choice if one is unlocked.</summary>

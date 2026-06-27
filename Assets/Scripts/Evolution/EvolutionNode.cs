@@ -14,6 +14,13 @@ public class EvolutionNode : ScriptableObject
     [SerializeField] private string displayName = "Tank";
     [SerializeField] private Sprite icon;
 
+    [Tooltip("Short tag shown on the card, e.g. \"WEAPON\", \"STAT BOOST\", \"PASSIVE\".")]
+    [SerializeField] private string category = "WEAPON";
+
+    [Tooltip("Card text describing what this evolution does.")]
+    [TextArea(2, 4)]
+    [SerializeField] private string description;
+
     [Header("Unlock")]
     [Tooltip("Minimum player level required to choose this node.")]
     [SerializeField] private int requiredLevel;
@@ -31,6 +38,8 @@ public class EvolutionNode : ScriptableObject
 
     public string DisplayName => displayName;
     public Sprite Icon => icon;
+    public string Category => category;
+    public string Description => description;
     public int RequiredLevel => requiredLevel;
     public WeaponBehavior Weapon => weapon;
     public IReadOnlyList<StatBonus> Bonuses => bonuses;

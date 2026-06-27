@@ -205,8 +205,9 @@ Exemplos de nós (ilustrativos — definir o conteúdo real depois):
   rollover de nível com carry-over e dispara `OnXpChanged(current, required)` e `OnLevelUp(level)`.
   Não conhece a origem do XP nem quem reage. Curva exponencial via `baseXp * growth^(level-1)`
   (campos serializados — extrair p/ SO se precisar de curva autorável). `XpBarView` (UI/) liga
-  os eventos ao slider + texto de nível (rich text TMP). Hook futuro: `OnLevelUp` →
-  `EvolutionManager.NotifyLevelUp` e o sistema de pontos de stat.
+  os eventos ao slider + texto de nível (rich text TMP). `EvolutionManager` se inscreve em
+  `OnLevelUp` (subscribe/unsubscribe em OnEnable/OnDisable) → árvore reage ao nível real.
+  Hook futuro restante: sistema de pontos de stat também consome `OnLevelUp`.
 - **Árvore de classes (implementado — base):** grafo data-driven de `EvolutionNode` (SO):
   cada nó referencia `WeaponBehavior` + `StatBonus[]` + filhos. `EvolutionManager` parte da
   raiz, escuta `NotifyLevelUp(int)` e, nos tiers, dispara `OnChoicesAvailable` com os filhos
@@ -215,8 +216,15 @@ Exemplos de nós (ilustrativos — definir o conteúdo real depois):
 - **StatBonus + PlayerStatType:** `StatBonus` (struct serializável) nomeia um `PlayerStatType`
   e vira `StatModifier` via `PlayerStats.ApplyBonus`. Ponte autorável entre assets e o sistema
   de `Stat`. Reusado pelo Eixo 1 (pontos de stat) e Eixo 2 (nós da árvore).
-- **WeaponBehavior:** Strategy via ScriptableObject — cada classe da árvore aponta para uma
-  implementação. Compatível com a base existente.
+- **WeaponBehavior (refatorado):** Strategy via ScriptableObject, stateless. Contrato novo:
+  `Fire(in WeaponContext)` — todo tiro spawna projéteis; o que muda é quantidade, spread,
+  dano e velocidade. `WeaponContext` (struct) carrega origem, direção da mira, `PlayerStats`
+  e `ProjectilePool` — desacopla a arma de quem puxa o gatilho. `ProjectileWeaponBehavior` é
+  o workhorse data-driven (count + spreadAngle + damage/speed multipliers) que cobre single,
+  twin, shotgun, radial, sniper só trocando valores no asset. Comportamentos fundamentalmente
+  diferentes (explosivo, ricochete) viram subclasses. O sistema clique-pra-atacar legado
+  (`PlayerAttack`, `WandBehavior`, `ConsumableBehavior`) foi removido. `BulletDistance` ainda
+  não é honrado (Projectile despawna por tempo) — follow-up.
 - **Bot AI:** `BotController` com estado simples (Idle → Chase → Attack). Sem NavMesh — posição calculada por `Vector2.MoveTowards` com separação de steering entre bots.
 - **XP orbs:** Pool de GameObjects, atraídos via Lerp no Update quando dentro do range.
 - **Spawner:** `ArenaSpawner` lê `ArenaConfig` (ScriptableObject) com densidade de bots e objetos por nível. Spawna fora do campo de visão do player.
