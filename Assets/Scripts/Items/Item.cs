@@ -20,9 +20,6 @@ public class Item : ScriptableObject
     public Vector3 weaponScale = Vector3.one;
     public Vector3 worldScale = Vector3.one;
 
-    [Header("Behavior")]
-    public WeaponBehavior weaponBehavior;
-
     [Header("Weapon")]
     public int damage;
     public float attackSpeed = 1f;

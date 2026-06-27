@@ -55,9 +55,6 @@ public class InventoryManager : MonoBehaviour
 
     public Item CurrentItem => _currentItem != null ? _currentItem.item : null;
 
-    public WeaponBehavior CurrentBehavior =>
-        _currentItem != null && _currentItem.item != null ? _currentItem.item.weaponBehavior : null;
-
     // Fired both when the selected slot changes and when its contents change.
     public event Action OnSelectedItemChanged;
 

@@ -2,8 +2,8 @@ using BulletCrash.Core.Pooling;
 using UnityEngine;
 
 /// <summary>
-/// Pools projectiles so the wand doesn't Instantiate/Destroy on every shot.
-/// Optional: if no instance exists, WandBehavior falls back to Instantiate.
+/// Pools projectiles so weapons don't Instantiate/Destroy on every shot (required for the
+/// bullet-hell hot path, per the WebGL budget). Spawned via <see cref="Spawn"/>.
 /// </summary>
 public class ProjectilePool : MonoBehaviour
 {
