@@ -24,12 +24,18 @@ public class ProjectileWeaponBehavior : WeaponBehavior
     [Tooltip("Multiplies the player's BulletSpeed stat.")]
     [SerializeField] private float speedMultiplier = 1f;
 
-    [Min(0.05f)]
-    [Tooltip("Multiplies the player's Reload (cooldown between shots). <1 fires faster, >1 slower.")]
-    [SerializeField] private float reloadMultiplier = 1f;
+    public override int MuzzleCount => projectileCount;
 
-    /// <summary>Read by the shooter to scale the firing cooldown. Lower = faster.</summary>
-    public float ReloadMultiplier => reloadMultiplier;
+    public override float MuzzleAngleOffset(int index)
+    {
+        if (projectileCount <= 1)
+            return 0f;
+
+        // Muzzle 0 sits on the aim direction; the rest fan out from it, so the player aims
+        // with the first indicator instead of the gap between two.
+        float step = spreadAngle / (projectileCount - 1);
+        return step * index;
+    }
 
     public override void Fire(in WeaponContext context)
     {
@@ -40,13 +46,13 @@ public class ProjectileWeaponBehavior : WeaponBehavior
         int damage = Mathf.RoundToInt(context.Stats.BulletDamage.Value * damageMultiplier);
 
         float center = Mathf.Atan2(context.AimDirection.y, context.AimDirection.x) * Mathf.Rad2Deg;
-        float start = center - spreadAngle * 0.5f;
-        float step = projectileCount > 1 ? spreadAngle / (projectileCount - 1) : 0f;
 
         for (int i = 0; i < projectileCount; i++)
         {
-            float angle = projectileCount > 1 ? start + step * i : center;
-            context.Pool.Spawn(context.Origin, AngleToDirection(angle), speed, damage);
+            float angle = center + MuzzleAngleOffset(i);
+            Vector2 direction = AngleToDirection(angle);
+            Vector2 spawnPosition = context.Origin + direction * context.MuzzleRadius;
+            context.Pool.Spawn(spawnPosition, direction, speed, damage);
         }
     }
 

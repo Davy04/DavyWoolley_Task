@@ -121,11 +121,33 @@ Exemplos de nós (ilustrativos — definir o conteúdo real depois):
 
 ---
 
+## Cosméticos (futuro — loja de skins)
+Planejado: loja onde o player escolhe **skin do personagem** e **skin do projétil**. Não é
+meta-progressão de gameplay (não altera stats) — é puramente visual.
+
+**Regra de arquitetura (vale desde já):** lógica de gameplay **nunca** conhece cosmético.
+`PlayerStats`, `Projectile`, `WeaponBehavior` operam com números/comportamento; sprites,
+materiais e trails são uma **camada de apresentação** aplicada por cima, trocável a qualquer hora.
+- Projétil: 1 prefab/pool só; o visual (SpriteRenderer/trail) é um filho dedicado. A loja troca
+  o sprite/material **uma vez** ao equipar — custo zero por-tiro.
+- Player: skin troca os sprites de `PlayerAnimator` (head/body), nunca a lógica.
+- Ponte futura: um `CosmeticLoadout` (SO/save) guarda os ids equipados; um componente de
+  apresentação aplica nos renderers no início da sessão. A loja só edita esse loadout.
+
 ## Armas
 - Arma base: projétil único, cadência média, dano médio
 - Sem seleção manual de arma — a build path modifica o comportamento da arma base
 - **Disparo manual:** botão esquerdo do mouse mantido pressionado dispara continuamente respeitando o Reload
 - **Mira pelo mouse:** projétil parte do player em direção ao cursor no momento do disparo
+- **Anel de disparo:** o player não segura arma — há um anel em volta dele e os projéteis saem
+  *da borda do anel*, no ponto pra onde cada um vai (`Origin + direção × muzzleRadius`). Um ou
+  mais **indicadores** (triângulos) na borda mostram os pontos de saída e giram com a mira.
+  Builds multi-projétil (Spinner 360°, shotgun) nascem espalhados pelo anel naturalmente.
+- **Indicadores dinâmicos:** `IndicatorRing` gera N indicadores conforme `WeaponBehavior.MuzzleCount`
+  / `MuzzleAngleOffset(i)` (mesma fórmula do `Fire`, fonte única de verdade), posicionados no anel
+  nos ângulos exatos dos disparos. Reconstrói ao trocar de arma (`PlayerShooter.OnWeaponChanged`).
+  Cada indicador é um prefab com sprite + `MuzzleFlash`; todos piscam juntos no `OnFired`.
+  A arte do prefab é authored apontando pra +X (direita) — sem offset no código.
 - **Object Pool obrigatório** para projéteis — nunca Instantiate/Destroy em hot path
 
 ---
@@ -216,6 +238,12 @@ Exemplos de nós (ilustrativos — definir o conteúdo real depois):
 - **StatBonus + PlayerStatType:** `StatBonus` (struct serializável) nomeia um `PlayerStatType`
   e vira `StatModifier` via `PlayerStats.ApplyBonus`. Ponte autorável entre assets e o sistema
   de `Stat`. Reusado pelo Eixo 1 (pontos de stat) e Eixo 2 (nós da árvore).
+- **PlayerShooter (implementado):** orquestra o disparo e é o `IWeaponHolder`. Lê o botão
+  esquerdo (segurar = rajada contínua), respeita o cooldown (`Reload × WeaponBehavior.ReloadMultiplier`),
+  pega a mira do `WeaponParent` (transform.right aponta pro cursor), monta o `WeaponContext`
+  (origem no `muzzle`, direção, `PlayerStats`, `ProjectilePool`) e chama `weapon.Fire()`. Não
+  conhece padrão/dano/projétil — só decide *quando* atirar. `SetWeapon` (da evolução) troca a
+  arma ativa. Pausa via `Time.timeScale == 0`.
 - **WeaponBehavior (refatorado):** Strategy via ScriptableObject, stateless. Contrato novo:
   `Fire(in WeaponContext)` — todo tiro spawna projéteis; o que muda é quantidade, spread,
   dano e velocidade. `WeaponContext` (struct) carrega origem, direção da mira, `PlayerStats`

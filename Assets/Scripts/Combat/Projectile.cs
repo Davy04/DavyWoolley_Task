@@ -62,7 +62,7 @@ public class Projectile : MonoBehaviour
     private void Impact(Vector3 position)
     {
         if (explosionPrefab != null)
-            Instantiate(explosionPrefab, position, Quaternion.identity);
+            Instantiate(explosionPrefab, position, Quaternion.Euler(0f, 0f, Random.Range(0f, 360f)));
 
         AudioManager.Instance?.PlaySFX(impactClip);
 

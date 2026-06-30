@@ -8,5 +8,19 @@ using UnityEngine;
 /// </summary>
 public abstract class WeaponBehavior : ScriptableObject
 {
+    [Header("Cadence")]
+    [Min(0.05f)]
+    [Tooltip("Multiplies the player's Reload (cooldown between shots). <1 fires faster, >1 slower.")]
+    [SerializeField] private float reloadMultiplier = 1f;
+
+    /// <summary>Read by the shooter to scale the firing cooldown. Lower = faster.</summary>
+    public float ReloadMultiplier => reloadMultiplier;
+
+    /// <summary>How many points shots come out of — drives the firing indicators on the ring.</summary>
+    public virtual int MuzzleCount => 1;
+
+    /// <summary>Angle (deg) of muzzle <paramref name="index"/> relative to the aim direction.</summary>
+    public virtual float MuzzleAngleOffset(int index) => 0f;
+
     public abstract void Fire(in WeaponContext context);
 }
