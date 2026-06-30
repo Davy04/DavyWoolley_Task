@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccae1208302034b48862298981e64c3c, type: 3}
   m_Name: BaseWeapon
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileWeaponBehavior
-  projectileCount: 1
-  spreadAngle: 0
+  reloadMultiplier: 0.4
+  projectileCount: 8
+  spreadAngle: 360
   damageMultiplier: 1
   speedMultiplier: 1
